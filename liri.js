@@ -48,7 +48,7 @@ switch (command) {
     break;
 }
 
-// --------------url for bands in town-----------------
+// --------------------------bands in town----------------------------
 function concertThis() {
   var queryUrl =
     "https://rest.bandsintown.com/artists/" +
@@ -101,25 +101,50 @@ function movieThis() {
   });
 }
 
-// if command is spotify-this-song search spotify
-// use searchTerm to search spotify
-//-----------------
+//------------------spotify-this-song search spotify----------------------
 
-var i;
-for (i = 3; i < process.argv.length; i++) {
-  searchTerm = searchTerm + process.argv[i] + " ";
-  console.log(searchTerm);
-}
+function spotifyThis() {
+  if (!searchTerm) {
+    console.log("Don't know what to pick, here we go!");
+    value = "The Sign";
+  }
 
-if (command === "spotify-this-song") {
-  spotify.search({ type: "track", query: searchTerm }, function(err, data) {
+  spotify.search({ type: "track", query: searchTerm }, (err, data) => {
     if (err) {
       return console.log("Error occurred: " + err);
     }
+    var spotifyData = data.tracks.items;
 
-    console.log(data.tracks.items[0].artists[0].name);
-    console.log(data.tracks.items[0].artists[0].external_urls.spotify);
-    console.log(data.tracks.items[0].album.name);
-    console.log(data.tracks.items[1].name);
+    console.log("Artist: ", spotifyData[0].artists[0].name);
+    // console.log("------------------");
+    console.log("Song Name: ", spotifyData[1].name);
+    // console.log("------------------");
+    console.log(
+      "Preview link: ",
+      spotifyData[0].artists[0].external_urls.spotify
+    );
+    // console.log("------------------");
+    console.log("Album Name: ", spotifyData[0].album.name);
+    // console.log("------------------");
+  });
+}
+//-------------------doWhatItSays-----------------------------
+
+function doWhatItSays() {
+  fs.readFile("random.txt", "utf8", (err, data) => {
+    if (err) {
+      console.log("ERROR REPORTED: ", err);
+    }
+    var dataArray = data.split(",");
+    action = dataArray[0];
+    searchTerm = dataArray[1];
+
+    if (action === "concert-this") {
+      bandsInTown(searchTerm);
+    } else if (action === "spotify-this-song") {
+      spotifyThis(searchTerm);
+    } else {
+      movieSearch(searchTerm);
+    }
   });
 }
